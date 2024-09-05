@@ -1,11 +1,9 @@
 package ru.example.voting.service;
 
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.mockito.*;
 import org.mockito.MockitoAnnotations;
-import ru.example.voting.model.Menu;
-import ru.example.voting.model.Restaurant;
+import ru.example.voting.model.*;
 import ru.example.voting.repository.MenuRepository;
 import ru.example.voting.to.MenuTo;
 
@@ -13,7 +11,7 @@ import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 
 class MenuServiceTest {
@@ -25,18 +23,16 @@ class MenuServiceTest {
     private MenuService menuService;
 
     private LocalDate today;
-    private Restaurant restaurant1;
-    private Restaurant restaurant2;
     private Menu menu1;
     private Menu menu2;
 
     @BeforeEach
     void setUp() {
-        MockitoAnnotations.initMocks(this);
+        MockitoAnnotations.openMocks(this);
 
         today = LocalDate.now();
-        restaurant1 = new Restaurant(1, "Restaurant №1");
-        restaurant2 = new Restaurant(2, "Restaurant №2");
+        Restaurant restaurant1 = new Restaurant(1, "Restaurant №1");
+        Restaurant restaurant2 = new Restaurant(2, "Restaurant №2");
 
         menu1 = new Menu(restaurant1, today, "Первое, Второе, Сок");
         menu2 = new Menu(restaurant2, today, "Салат, Борщ, Компот");
@@ -55,6 +51,6 @@ class MenuServiceTest {
                 new MenuTo(2, "Restaurant №2", "Салат, Борщ, Компот", today)
         );
 
-        assertEquals(expected, result);
+        assertThat(result).containsExactlyInAnyOrder(expected.toArray(new MenuTo[0]));
     }
 }

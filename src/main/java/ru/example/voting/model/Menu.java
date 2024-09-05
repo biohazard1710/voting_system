@@ -1,11 +1,13 @@
 package ru.example.voting.model;
 
 import jakarta.persistence.*;
+import lombok.Getter;
 
 import java.time.LocalDate;
 
 @Entity
 @Table(name = "menu")
+@Getter
 public class Menu {
 
     @Id
@@ -38,29 +40,4 @@ public class Menu {
         this.dishes = dishes;
     }
 
-    public Integer getId() {
-        return id;
-    }
-
-    public Restaurant getRestaurant() {
-        return restaurant;
-    }
-
-    public LocalDate getMenuDate() {
-        return menuDate;
-    }
-
-    public String getDishes() {
-        return dishes;
-    }
-
-    @Override
-    public String toString() {
-        return "Menu{" +
-                "id=" + id +
-                ", restaurant=" + restaurant +
-                ", menuDate=" + menuDate +
-                ", dishes='" + dishes + '\'' +
-                '}';
-    }
 }

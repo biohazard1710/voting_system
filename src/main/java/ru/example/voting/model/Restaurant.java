@@ -1,11 +1,13 @@
 package ru.example.voting.model;
 
 import jakarta.persistence.*;
+import lombok.Getter;
 
 import java.util.List;
 
 @Entity
 @Table(name = "restaurant")
+@Getter
 public class Restaurant {
 
     @Id
@@ -30,24 +32,4 @@ public class Restaurant {
         this.name = name;
     }
 
-    public Integer getId() {
-        return id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public List<Menu> getMenus() {
-        return menus;
-    }
-
-    @Override
-    public String toString() {
-        return "Restaurant{" +
-                "id=" + id +
-                ", name='" + name + '\'' +
-                ", menus=" + menus +
-                '}';
-    }
 }
