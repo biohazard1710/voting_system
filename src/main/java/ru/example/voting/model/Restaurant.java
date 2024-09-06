@@ -1,13 +1,17 @@
 package ru.example.voting.model;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import java.util.List;
 
 @Entity
 @Table(name = "restaurant")
 @Getter
+@NoArgsConstructor
+@AllArgsConstructor
 public class Restaurant {
 
     @Id
@@ -21,8 +25,6 @@ public class Restaurant {
     @OneToMany(mappedBy = "restaurant", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Menu> menus;
 
-    public Restaurant() {}
-
     public Restaurant(String name) {
         this.name = name;
     }
@@ -31,5 +33,4 @@ public class Restaurant {
         this.id = id;
         this.name = name;
     }
-
 }

@@ -1,13 +1,17 @@
 package ru.example.voting.model;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
 
 @Entity
 @Table(name = "menu")
 @Getter
+@NoArgsConstructor
+@AllArgsConstructor
 public class Menu {
 
     @Id
@@ -24,17 +28,7 @@ public class Menu {
     @Column(name = "dishes", nullable = false, length = 255)
     private String dishes;
 
-    public Menu() {
-    }
-
     public Menu(Restaurant restaurant, LocalDate menuDate, String dishes) {
-        this.restaurant = restaurant;
-        this.menuDate = menuDate;
-        this.dishes = dishes;
-    }
-
-    public Menu(Integer id, Restaurant restaurant, LocalDate menuDate, String dishes) {
-        this.id = id;
         this.restaurant = restaurant;
         this.menuDate = menuDate;
         this.dishes = dishes;

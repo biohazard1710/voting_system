@@ -51,6 +51,6 @@ class MenuServiceTest {
                 new MenuTo(2, "Restaurant №2", "Салат, Борщ, Компот", today)
         );
 
-        assertThat(result).containsExactlyInAnyOrder(expected.toArray(new MenuTo[0]));
+        assertThat(result).containsExactlyInAnyOrderElementsOf(expected);
     }
 }
