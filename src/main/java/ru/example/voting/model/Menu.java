@@ -1,6 +1,8 @@
 package ru.example.voting.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -12,26 +14,19 @@ import java.time.LocalDate;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-public class Menu {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+public class Menu extends BaseEntity {
 
     @ManyToOne
-    @JoinColumn(name = "restaurant_id")
+    @JoinColumn(name = "restaurant_id", nullable = false)
     private Restaurant restaurant;
 
     @Column(name = "date", nullable = false)
+    @NotNull
     private LocalDate menuDate;
 
-    @Column(name = "dishes", nullable = false, length = 255)
+    @Column(name = "dishes", nullable = false)
+    @NotNull
+    @Size(min = 20, max = 255)
     private String dishes;
-
-    public Menu(Restaurant restaurant, LocalDate menuDate, String dishes) {
-        this.restaurant = restaurant;
-        this.menuDate = menuDate;
-        this.dishes = dishes;
-    }
 
 }

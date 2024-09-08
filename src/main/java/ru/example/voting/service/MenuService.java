@@ -12,7 +12,7 @@ import java.util.stream.Collectors;
 @Service
 public class MenuService {
 
-    private MenuRepository menuRepository;
+    private final MenuRepository menuRepository;
 
     public MenuService(MenuRepository menuRepository) {
         this.menuRepository = menuRepository;
