@@ -5,7 +5,7 @@ import org.mockito.*;
 import org.mockito.MockitoAnnotations;
 import ru.example.voting.model.*;
 import ru.example.voting.repository.MenuRepository;
-import ru.example.voting.to.MenuTo;
+import ru.example.voting.to.MenuOutputTo;
 
 import java.time.LocalDate;
 import java.util.Arrays;
@@ -42,13 +42,13 @@ class MenuServiceTest {
     void testGetTodayMenus() {
         when(menuRepository.findByMenuDate(today)).thenReturn(Arrays.asList(menu1, menu2));
 
-        List<MenuTo> result = menuService.getTodayMenus();
+        List<MenuOutputTo> result = menuService.getTodayMenus();
 
         verify(menuRepository, times(1)).findByMenuDate(today);
 
-        List<MenuTo> expected = Arrays.asList(
-                new MenuTo(1, "Restaurant №1", "Первое, Второе, Сок", today),
-                new MenuTo(2, "Restaurant №2", "Салат, Борщ, Компот", today)
+        List<MenuOutputTo> expected = Arrays.asList(
+                new MenuOutputTo(1, "Restaurant №1", "Первое, Второе, Сок", today),
+                new MenuOutputTo(2, "Restaurant №2", "Салат, Борщ, Компот", today)
         );
 
         assertThat(result).containsExactlyInAnyOrderElementsOf(expected);

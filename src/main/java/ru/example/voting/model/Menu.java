@@ -1,8 +1,6 @@
 package ru.example.voting.model;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -21,12 +19,9 @@ public class Menu extends BaseEntity {
     private Restaurant restaurant;
 
     @Column(name = "date", nullable = false)
-    @NotNull
     private LocalDate menuDate;
 
     @Column(name = "dishes", nullable = false)
-    @NotNull
-    @Size(min = 20, max = 255)
     private String dishes;
 
 }

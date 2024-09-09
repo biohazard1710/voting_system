@@ -7,9 +7,10 @@ import ru.example.voting.model.Vote;
 import ru.example.voting.repository.RestaurantRepository;
 import ru.example.voting.repository.UserRepository;
 import ru.example.voting.repository.VoteRepository;
-import ru.example.voting.to.VoteTo;
+import ru.example.voting.to.VoteInputTo;
 
 import java.time.LocalDate;
+import java.util.Optional;
 
 @Service
 public class VoteService {
@@ -24,23 +25,26 @@ public class VoteService {
         this.voteRepository = voteRepository;
     }
 
-    public VoteResult vote(VoteTo voteTo) {
+    public VoteResult vote(VoteInputTo voteInputTo) {
 
-        User user = userRepository.findById(voteTo.getUserId()).orElse(null);
-        if (user == null) {
+        Optional<User> optUser = userRepository.findById(voteInputTo.getUserId());
+        if (optUser.isEmpty()) {
             return VoteResult.USER_NOT_FOUND;
         }
 
-        Restaurant restaurant = restaurantRepository.findById(voteTo.getRestaurantId()).orElse(null);
-        if (restaurant == null) {
+        Optional<Restaurant> optRestaurant = restaurantRepository.findById(voteInputTo.getRestaurantId());
+        if (optRestaurant.isEmpty()) {
             return VoteResult.RESTAURANT_NOT_FOUND;
         }
 
         LocalDate today = LocalDate.now();
-        boolean alreadyVoted = voteRepository.existsByUserIdAndVoteDate(user, today);
+        boolean alreadyVoted = voteRepository.existsByUserIdAndVoteDate(voteInputTo.getUserId(), today);
         if (alreadyVoted) {
             return VoteResult.ALREADY_VOTED;
         }
+
+        User user = optUser.get();
+        Restaurant restaurant = optRestaurant.get();
 
         Vote vote = new Vote(user, restaurant, today);
         voteRepository.save(vote);

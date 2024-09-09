@@ -5,9 +5,9 @@ import lombok.Data;
 
 @Data
 @AllArgsConstructor
-public class VoteTo {
+public class ErrorResponseOutputTo {
 
-    private Integer userId;
-    private Integer restaurantId;
+    private String code;
+    private String description;
 
 }

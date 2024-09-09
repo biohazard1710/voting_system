@@ -1,7 +1,6 @@
 package ru.example.voting.model;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -17,16 +16,13 @@ public class Vote extends BaseEntity {
 
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
-    @NotNull
-    private User userId;
+    private User user;
 
     @ManyToOne
     @JoinColumn(name = "restaurant_id", nullable = false)
-    @NotNull
-    private Restaurant restaurantId;
+    private Restaurant restaurant;
 
     @Column(name = "vote_date", nullable = false)
-    @NotNull
     private LocalDate voteDate;
 
 }

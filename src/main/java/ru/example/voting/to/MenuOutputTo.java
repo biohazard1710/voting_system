@@ -6,7 +6,7 @@ import java.time.LocalDate;
 
 @Data
 @AllArgsConstructor
-public class MenuTo {
+public class MenuOutputTo {
 
     private Integer restaurantId;
     private String restaurantName;

@@ -16,8 +16,6 @@ import java.util.List;
 @AllArgsConstructor
 public class Restaurant extends BaseEntity {
 
-    @NotBlank
-    @Size(min = 2, max = 128)
     @Column(name = "name", nullable = false)
     private String name;
 
@@ -28,4 +26,5 @@ public class Restaurant extends BaseEntity {
         super(id);
         this.name = name;
     }
+
 }
