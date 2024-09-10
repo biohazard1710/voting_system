@@ -1,5 +1,7 @@
 package ru.example.voting.service;
 
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import ru.example.voting.model.Restaurant;
 import ru.example.voting.model.User;
@@ -27,18 +29,28 @@ public class VoteService {
 
     public VoteResult vote(VoteInputTo voteInputTo) {
 
-        Optional<User> optUser = userRepository.findById(voteInputTo.getUserId());
+        // Получаем текущего аутентифицированного пользователя
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        if (!(principal instanceof UserDetails)) {
+            return VoteResult.USER_NOT_FOUND;
+        }
+        UserDetails userDetails = (UserDetails) principal;
+        String email = userDetails.getUsername();
+
+        // Находим пользователя по email
+        Optional<User> optUser = userRepository.findByEmailIgnoreCase(email);
         if (optUser.isEmpty()) {
             return VoteResult.USER_NOT_FOUND;
         }
 
+        // Проверяем наличие ресторана и, если все ок, сохраняем голос
         Optional<Restaurant> optRestaurant = restaurantRepository.findById(voteInputTo.getRestaurantId());
         if (optRestaurant.isEmpty()) {
             return VoteResult.RESTAURANT_NOT_FOUND;
         }
 
         LocalDate today = LocalDate.now();
-        boolean alreadyVoted = voteRepository.existsByUserIdAndVoteDate(voteInputTo.getUserId(), today);
+        boolean alreadyVoted = voteRepository.existsByUserIdAndVoteDate(optUser.get().getId(), today);
         if (alreadyVoted) {
             return VoteResult.ALREADY_VOTED;
         }

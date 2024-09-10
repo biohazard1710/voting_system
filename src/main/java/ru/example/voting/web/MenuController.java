@@ -1,4 +1,4 @@
-package ru.example.voting.controller;
+package ru.example.voting.web;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;

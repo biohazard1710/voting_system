@@ -51,6 +51,28 @@ ____
 
 To stop the application, simply press `Ctrl+C` in the terminal where Maven is running.
 ____
+## User Access Information
+
+### Default Credentials
+
+To help you get started with testing the application, you can use the following default credentials:
+
+- **Regular User:**
+   - **Email:** user@mail.ru
+   - **Password:** userpwd
+
+- **Admin User:**
+   - **Email:** admin@gmail.com
+   - **Password:** adminpwd
+
+### How to Log In
+
+1. Start the application as described in the [Running the Application](#running-the-application) section.
+2. Open your web browser and navigate to [http://localhost:8080](http://localhost:8080).
+3. Use the provided credentials to log in:
+   - Regular users will have access to voting and viewing restaurant menus.
+   - Admin users will have access to inputting new restaurants and updating menus.
+____
 ## API Documentation
 
 Swagger UI is available at the following endpoint:

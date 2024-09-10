@@ -1,4 +1,4 @@
-package ru.example.voting.controller;
+package ru.example.voting.web;
 
 import jakarta.xml.bind.ValidationException;
 import org.springframework.http.HttpStatus;

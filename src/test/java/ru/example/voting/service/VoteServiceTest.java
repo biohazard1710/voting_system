@@ -3,6 +3,11 @@ package ru.example.voting.service;
 import org.junit.jupiter.api.*;
 import org.mockito.*;
 import org.mockito.MockitoAnnotations;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import ru.example.voting.model.*;
 import ru.example.voting.repository.RestaurantRepository;
 import ru.example.voting.repository.UserRepository;
@@ -41,20 +46,32 @@ class VoteServiceTest {
         today = LocalDate.now();
         user = new User(1, "User", "user@example.com", "password123", Role.USER);
         restaurant = new Restaurant(1, "Restaurant №1");
-        voteInputTo = new VoteInputTo(1, 1);
+        voteInputTo = new VoteInputTo(1);
+
+        // Mocking the SecurityContext
+        UserDetails userDetails = org.springframework.security.core.userdetails.User
+                .withUsername(user.getEmail())
+                .password(user.getPassword())
+                .roles(user.getRole().name())
+                .build();
+
+        Authentication authentication = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+        SecurityContext securityContext = mock(SecurityContext.class);
+        when(securityContext.getAuthentication()).thenReturn(authentication);
+        SecurityContextHolder.setContext(securityContext);
     }
 
     @Test
     void testSuccessVote() {
-        when(userRepository.findById(1)).thenReturn(Optional.of(user));
-        when(restaurantRepository.findById(1)).thenReturn(Optional.of(restaurant));
-        when(voteRepository.existsByUserIdAndVoteDate(1, today)).thenReturn(false);
+        when(userRepository.findByEmailIgnoreCase(user.getEmail())).thenReturn(Optional.of(user));
+        when(restaurantRepository.findById(voteInputTo.getRestaurantId())).thenReturn(Optional.of(restaurant));
+        when(voteRepository.existsByUserIdAndVoteDate(user.getId(), today)).thenReturn(false);
 
         VoteResult result = voteService.vote(voteInputTo);
 
-        verify(userRepository, times(1)).findById(1);
-        verify(restaurantRepository, times(1)).findById(1);
-        verify(voteRepository, times(1)).existsByUserIdAndVoteDate(1, today);
+        verify(userRepository, times(1)).findByEmailIgnoreCase(user.getEmail());
+        verify(restaurantRepository, times(1)).findById(voteInputTo.getRestaurantId());
+        verify(voteRepository, times(1)).existsByUserIdAndVoteDate(user.getId(), today);
         verify(voteRepository, times(1)).save(any(Vote.class));
 
         assertThat(result).isEqualTo(VoteResult.SUCCESS);
@@ -62,11 +79,11 @@ class VoteServiceTest {
 
     @Test
     void testUserNotFound() {
-        when(userRepository.findById(1)).thenReturn(Optional.empty());
+        when(userRepository.findByEmailIgnoreCase(user.getEmail())).thenReturn(Optional.empty());
 
         VoteResult result = voteService.vote(voteInputTo);
 
-        verify(userRepository, times(1)).findById(1);
+        verify(userRepository, times(1)).findByEmailIgnoreCase(user.getEmail());
         verify(restaurantRepository, never()).findById(anyInt());
         verify(voteRepository, never()).existsByUserIdAndVoteDate(anyInt(), any(LocalDate.class));
         verify(voteRepository, never()).save(any(Vote.class));
@@ -76,13 +93,13 @@ class VoteServiceTest {
 
     @Test
     void testRestaurantNotFound() {
-        when(userRepository.findById(1)).thenReturn(Optional.of(user));
-        when(restaurantRepository.findById(1)).thenReturn(Optional.empty());
+        when(userRepository.findByEmailIgnoreCase(user.getEmail())).thenReturn(Optional.of(user));
+        when(restaurantRepository.findById(voteInputTo.getRestaurantId())).thenReturn(Optional.empty());
 
         VoteResult result = voteService.vote(voteInputTo);
 
-        verify(userRepository, times(1)).findById(1);
-        verify(restaurantRepository, times(1)).findById(1);
+        verify(userRepository, times(1)).findByEmailIgnoreCase(user.getEmail());
+        verify(restaurantRepository, times(1)).findById(voteInputTo.getRestaurantId());
         verify(voteRepository, never()).existsByUserIdAndVoteDate(anyInt(), any(LocalDate.class));
         verify(voteRepository, never()).save(any(Vote.class));
 
@@ -91,15 +108,15 @@ class VoteServiceTest {
 
     @Test
     void testAlreadyVotedToday() {
-        when(userRepository.findById(1)).thenReturn(Optional.of(user));
-        when(restaurantRepository.findById(1)).thenReturn(Optional.of(restaurant));
-        when(voteRepository.existsByUserIdAndVoteDate(1, today)).thenReturn(true);
+        when(userRepository.findByEmailIgnoreCase(user.getEmail())).thenReturn(Optional.of(user));
+        when(restaurantRepository.findById(voteInputTo.getRestaurantId())).thenReturn(Optional.of(restaurant));
+        when(voteRepository.existsByUserIdAndVoteDate(user.getId(), today)).thenReturn(true);
 
         VoteResult result = voteService.vote(voteInputTo);
 
-        verify(userRepository, times(1)).findById(1);
-        verify(restaurantRepository, times(1)).findById(1);
-        verify(voteRepository, times(1)).existsByUserIdAndVoteDate(1, today);
+        verify(userRepository, times(1)).findByEmailIgnoreCase(user.getEmail());
+        verify(restaurantRepository, times(1)).findById(voteInputTo.getRestaurantId());
+        verify(voteRepository, times(1)).existsByUserIdAndVoteDate(user.getId(), today);
         verify(voteRepository, never()).save(any(Vote.class));
 
         assertThat(result).isEqualTo(VoteResult.ALREADY_VOTED);
