@@ -24,4 +24,10 @@ public class Menu extends BaseEntity {
     @Column(name = "dishes", nullable = false)
     private String dishes;
 
+    public Menu(Integer id, Restaurant restaurant, LocalDate menuDate, String dishes) {
+        super(id);
+        this.restaurant = restaurant;
+        this.menuDate = menuDate;
+        this.dishes = dishes;
+    }
 }

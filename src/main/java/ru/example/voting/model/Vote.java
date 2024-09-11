@@ -19,8 +19,8 @@ public class Vote extends BaseEntity {
     private User user;
 
     @ManyToOne
-    @JoinColumn(name = "restaurant_id", nullable = false)
-    private Restaurant restaurant;
+    @JoinColumn(name = "menu_id", nullable = false)
+    private Menu menu;
 
     @Column(name = "vote_date", nullable = false)
     private LocalDate voteDate;

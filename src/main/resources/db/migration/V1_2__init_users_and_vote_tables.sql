@@ -14,9 +14,9 @@ CREATE TABLE vote
 (
     id INTEGER AUTO_INCREMENT PRIMARY KEY,
     user_id INTEGER NOT NULL,
-    restaurant_id INTEGER NOT NULL,
+    menu_id INTEGER NOT NULL,
     vote_date DATE NOT NULL,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-    FOREIGN KEY (restaurant_id) REFERENCES restaurant(id) ON DELETE CASCADE,
+    FOREIGN KEY (menu_id) REFERENCES menu(id) ON DELETE CASCADE,
     CONSTRAINT unique_user_vote_per_day UNIQUE (user_id, vote_date)
 );
