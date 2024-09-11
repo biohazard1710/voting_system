@@ -5,11 +5,6 @@ import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContext;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import ru.example.voting.model.*;
 import ru.example.voting.repository.MenuRepository;
 import ru.example.voting.repository.UserRepository;
@@ -36,6 +31,7 @@ class VoteServiceTest {
 
     @InjectMocks
     private VoteService voteService;
+
     private LocalDate today;
     private User user;
     private Menu menu;
@@ -52,17 +48,6 @@ class VoteServiceTest {
         menu = new Menu(1, restaurant, today, "Dish - 1.12, Dish - 2.30");
         menuId = menu.getId();
 
-        UserDetails userDetails = org.springframework.security.core.userdetails.User
-                .withUsername(user.getEmail())
-                .password(user.getPassword())
-                .roles(user.getRole().name())
-                .build();
-
-        Authentication authentication = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
-        SecurityContext securityContext = mock(SecurityContext.class);
-        when(securityContext.getAuthentication()).thenReturn(authentication);
-        SecurityContextHolder.setContext(securityContext);
-
         principal = () -> user.getEmail();
     }
 
@@ -71,6 +56,9 @@ class VoteServiceTest {
         when(userRepository.findByEmailIgnoreCase(user.getEmail())).thenReturn(Optional.of(user));
         when(menuRepository.findById(menuId)).thenReturn(Optional.of(menu));
         when(voteRepository.existsByUserIdAndVoteDate(user.getId(), today)).thenReturn(false);
+
+        Vote mockSavedVote = new Vote(user, menu, today);
+        when(voteRepository.save(any(Vote.class))).thenReturn(mockSavedVote);
 
         Integer votedMenuId = voteService.vote(menuId, principal);
 

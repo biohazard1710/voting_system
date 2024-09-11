@@ -7,7 +7,6 @@ import ru.example.voting.to.MenuOutputTo;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 public class MenuService {
@@ -24,11 +23,13 @@ public class MenuService {
 
         return menus.stream()
                 .map(menu -> new MenuOutputTo(
+                        menu.getId(),
                         menu.getRestaurant().getId(),
                         menu.getRestaurant().getName(),
                         menu.getDishes(),
                         menu.getMenuDate()
                 ))
-                .collect(Collectors.toList());
+                .toList();
     }
+
 }
