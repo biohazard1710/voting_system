@@ -9,10 +9,8 @@ import ru.example.voting.model.Vote;
 import ru.example.voting.repository.RestaurantRepository;
 import ru.example.voting.repository.UserRepository;
 import ru.example.voting.repository.VoteRepository;
-import ru.example.voting.to.VoteInputTo;
 
 import java.time.LocalDate;
-import java.util.Optional;
 
 @Service
 public class VoteService {
@@ -27,40 +25,28 @@ public class VoteService {
         this.voteRepository = voteRepository;
     }
 
-    public VoteResult vote(VoteInputTo voteInputTo) {
+    public void vote(Integer restaurantId) {
 
-        // Получаем текущего аутентифицированного пользователя
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        if (!(principal instanceof UserDetails)) {
-            return VoteResult.USER_NOT_FOUND;
+        if (!(principal instanceof UserDetails userDetails)) {
+            throw new IllegalArgumentException("User not found");
         }
-        UserDetails userDetails = (UserDetails) principal;
         String email = userDetails.getUsername();
 
-        // Находим пользователя по email
-        Optional<User> optUser = userRepository.findByEmailIgnoreCase(email);
-        if (optUser.isEmpty()) {
-            return VoteResult.USER_NOT_FOUND;
-        }
+        User user = userRepository.findByEmailIgnoreCase(email)
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
-        // Проверяем наличие ресторана и, если все ок, сохраняем голос
-        Optional<Restaurant> optRestaurant = restaurantRepository.findById(voteInputTo.getRestaurantId());
-        if (optRestaurant.isEmpty()) {
-            return VoteResult.RESTAURANT_NOT_FOUND;
-        }
+        Restaurant restaurant = restaurantRepository.findById(restaurantId)
+                .orElseThrow(() -> new IllegalArgumentException("Restaurant with id " + restaurantId + " not found"));
 
         LocalDate today = LocalDate.now();
-        boolean alreadyVoted = voteRepository.existsByUserIdAndVoteDate(optUser.get().getId(), today);
+        boolean alreadyVoted = voteRepository.existsByUserIdAndVoteDate(user.getId(), today);
         if (alreadyVoted) {
-            return VoteResult.ALREADY_VOTED;
+            throw new IllegalArgumentException(user.getName() + " has already voted today");
         }
-
-        User user = optUser.get();
-        Restaurant restaurant = optRestaurant.get();
 
         Vote vote = new Vote(user, restaurant, today);
         voteRepository.save(vote);
-        return VoteResult.SUCCESS;
     }
 
 }

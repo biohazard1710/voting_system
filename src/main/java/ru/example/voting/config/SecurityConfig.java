@@ -37,7 +37,7 @@ public class SecurityConfig {
                 )
                 .formLogin(login -> login
                         .loginProcessingUrl("/login")
-                        .defaultSuccessUrl("/api/restaurants/menus", true)
+                        .defaultSuccessUrl("/swagger-ui/index.html", true)
                         .permitAll()
                 )
                 .logout(LogoutConfigurer::permitAll)
