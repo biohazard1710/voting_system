@@ -2,14 +2,13 @@ package ru.example.voting.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
-import ru.example.voting.model.Menu;
+import ru.example.voting.model.Vote;
 
 import java.time.LocalDate;
-import java.util.List;
 
 @Repository
-public interface MenuRepository extends JpaRepository<Menu, Integer> {
+public interface VoteRepository extends JpaRepository<Vote, Integer> {
 
-    List<Menu> findByMenuDate(LocalDate date);
+    boolean existsByUserIdAndVoteDate(Integer userId, LocalDate voteDate);
 
 }

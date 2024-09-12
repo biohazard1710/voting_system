@@ -12,26 +12,22 @@ import java.time.LocalDate;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-public class Menu {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+public class Menu extends BaseEntity {
 
     @ManyToOne
-    @JoinColumn(name = "restaurant_id")
+    @JoinColumn(name = "restaurant_id", nullable = false)
     private Restaurant restaurant;
 
     @Column(name = "date", nullable = false)
     private LocalDate menuDate;
 
-    @Column(name = "dishes", nullable = false, length = 255)
+    @Column(name = "dishes", nullable = false)
     private String dishes;
 
-    public Menu(Restaurant restaurant, LocalDate menuDate, String dishes) {
+    public Menu(Integer id, Restaurant restaurant, LocalDate menuDate, String dishes) {
+        super(id);
         this.restaurant = restaurant;
         this.menuDate = menuDate;
         this.dishes = dishes;
     }
-
 }
