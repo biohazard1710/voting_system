@@ -8,6 +8,7 @@ import ru.example.voting.model.Vote;
 import ru.example.voting.repository.MenuRepository;
 import ru.example.voting.repository.UserRepository;
 import ru.example.voting.repository.VoteRepository;
+import ru.example.voting.to.VoteOutputTo;
 
 import java.security.Principal;
 import java.time.LocalDate;
@@ -15,6 +16,11 @@ import java.time.LocalDate;
 @Service
 @Slf4j
 public class VoteService {
+
+    protected static final String USER_NOT_FOUND_MESSAGE = "User not found";
+    protected static final String MENU_NOT_FOUND_MESSAGE = "Menu with id %d not found";
+    protected static final String ALREADY_VOTED_TODAY_MESSAGE = "You have already voted today";
+    protected static final String NOT_VOTED_TODAY_MESSAGE = "You didn't vote today";
 
     private final MenuRepository menuRepository;
     private final UserRepository userRepository;
@@ -37,12 +43,24 @@ public class VoteService {
         return menu.getId();
     }
 
+    public VoteOutputTo getTodayUserVote(Principal principal) {
+        User user = getUser(principal);
+        Vote vote = getTodayVote(user.getId());
+
+        return new VoteOutputTo(
+                vote.getMenu().getId(),
+                vote.getMenu().getRestaurant().getName(),
+                vote.getMenu().getDishes(),
+                vote.getVoteDate()
+        );
+    }
+
     private User getUser(Principal principal) {
         String email = principal.getName();
         return userRepository.findByEmailIgnoreCase(email)
                 .orElseThrow(() -> {
                     log.error("User with email {} not found", email);
-                    return new IllegalArgumentException("User not found");
+                    return new IllegalArgumentException(USER_NOT_FOUND_MESSAGE);
                 });
     }
 
@@ -50,7 +68,8 @@ public class VoteService {
         return menuRepository.findById(menuId)
                 .orElseThrow(() -> {
                     log.error("Menu with ID {} not found", menuId);
-                    return new IllegalArgumentException("Menu with id " + menuId + " not found");
+                    String message = String.format(MENU_NOT_FOUND_MESSAGE, menuId);
+                    return new IllegalArgumentException(message);
                 });
     }
 
@@ -59,7 +78,7 @@ public class VoteService {
         boolean alreadyVoted = voteRepository.existsByUserIdAndVoteDate(user.getId(), today);
         if (alreadyVoted) {
             log.warn("User with ID {} already voted today", user.getId());
-            throw new IllegalArgumentException("You have already voted today");
+            throw new IllegalArgumentException(ALREADY_VOTED_TODAY_MESSAGE);
         }
     }
 
@@ -68,6 +87,15 @@ public class VoteService {
         Vote savedVote = voteRepository.save(vote);
         log.info("Saved vote with ID {}", savedVote.getId());
         return savedVote.getId();
+    }
+
+    private Vote getTodayVote(Integer userId) {
+        LocalDate today = LocalDate.now();
+        return voteRepository.findByUserIdAndVoteDate(userId, today)
+                .orElseThrow(() -> {
+                    log.error("Vote not found for user with ID {} on date {}", userId, today);
+                    return new IllegalArgumentException(NOT_VOTED_TODAY_MESSAGE);
+                });
     }
 
 }

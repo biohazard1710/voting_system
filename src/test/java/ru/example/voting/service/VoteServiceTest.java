@@ -9,6 +9,7 @@ import ru.example.voting.model.*;
 import ru.example.voting.repository.MenuRepository;
 import ru.example.voting.repository.UserRepository;
 import ru.example.voting.repository.VoteRepository;
+import ru.example.voting.to.VoteOutputTo;
 
 import java.security.Principal;
 import java.time.LocalDate;
@@ -57,8 +58,8 @@ class VoteServiceTest {
         when(menuRepository.findById(menuId)).thenReturn(Optional.of(menu));
         when(voteRepository.existsByUserIdAndVoteDate(user.getId(), today)).thenReturn(false);
 
-        Vote mockSavedVote = new Vote(user, menu, today);
-        when(voteRepository.save(any(Vote.class))).thenReturn(mockSavedVote);
+        Vote savedVote = new Vote(1, user, menu, today);
+        when(voteRepository.save(any(Vote.class))).thenReturn(savedVote);
 
         Integer votedMenuId = voteService.vote(menuId, principal);
 
@@ -73,14 +74,13 @@ class VoteServiceTest {
     void testUserNotFound() {
         when(userRepository.findByEmailIgnoreCase(user.getEmail())).thenReturn(Optional.empty());
 
-        Exception exception = assertThrows(IllegalArgumentException.class, () -> voteService.vote(menuId, principal));
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> voteService.vote(menuId, principal));
 
         verify(userRepository).findByEmailIgnoreCase(user.getEmail());
-        verify(menuRepository, never()).findById(anyInt());
-        verify(voteRepository, never()).existsByUserIdAndVoteDate(anyInt(), any(LocalDate.class));
-        verify(voteRepository, never()).save(any(Vote.class));
+        verifyNoInteractions(menuRepository);
+        verifyNoInteractions(voteRepository);
 
-        assertThat(exception.getMessage()).isEqualTo("User not found");
+        assertThat(exception.getMessage()).isEqualTo(VoteService.USER_NOT_FOUND_MESSAGE);
     }
 
     @Test
@@ -88,14 +88,14 @@ class VoteServiceTest {
         when(userRepository.findByEmailIgnoreCase(user.getEmail())).thenReturn(Optional.of(user));
         when(menuRepository.findById(menuId)).thenReturn(Optional.empty());
 
-        Exception exception = assertThrows(IllegalArgumentException.class, () -> voteService.vote(menuId, principal));
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> voteService.vote(menuId, principal));
 
         verify(userRepository).findByEmailIgnoreCase(user.getEmail());
         verify(menuRepository).findById(menuId);
-        verify(voteRepository, never()).existsByUserIdAndVoteDate(anyInt(), any(LocalDate.class));
-        verify(voteRepository, never()).save(any(Vote.class));
+        verifyNoInteractions(voteRepository);
 
-        assertThat(exception.getMessage()).isEqualTo("Menu with id " + menuId + " not found");
+        String message = String.format(VoteService.MENU_NOT_FOUND_MESSAGE, menuId);
+        assertThat(exception.getMessage()).isEqualTo(message);
     }
 
     @Test
@@ -104,13 +104,56 @@ class VoteServiceTest {
         when(menuRepository.findById(menuId)).thenReturn(Optional.of(menu));
         when(voteRepository.existsByUserIdAndVoteDate(user.getId(), today)).thenReturn(true);
 
-        Exception exception = assertThrows(IllegalArgumentException.class, () -> voteService.vote(menuId, principal));
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> voteService.vote(menuId, principal));
 
         verify(userRepository).findByEmailIgnoreCase(user.getEmail());
         verify(menuRepository).findById(menuId);
         verify(voteRepository).existsByUserIdAndVoteDate(user.getId(), today);
         verify(voteRepository, never()).save(any(Vote.class));
 
-        assertThat(exception.getMessage()).isEqualTo("You have already voted today");
+        assertThat(exception.getMessage()).isEqualTo(VoteService.ALREADY_VOTED_TODAY_MESSAGE);
     }
+
+    @Test
+    void testGetTodayUserVote() {
+        Vote vote = new Vote(1, user, menu, today);
+        when(userRepository.findByEmailIgnoreCase(user.getEmail())).thenReturn(Optional.of(user));
+        when(voteRepository.findByUserIdAndVoteDate(user.getId(), today)).thenReturn(Optional.of(vote));
+
+        VoteOutputTo voteOutput = voteService.getTodayUserVote(principal);
+
+        verify(userRepository).findByEmailIgnoreCase(user.getEmail());
+        verify(voteRepository).findByUserIdAndVoteDate(user.getId(), today);
+
+        assertThat(voteOutput.getMenuId()).isEqualTo(menu.getId());
+        assertThat(voteOutput.getRestaurantName()).isEqualTo(menu.getRestaurant().getName());
+        assertThat(voteOutput.getDishes()).isEqualTo(menu.getDishes());
+        assertThat(voteOutput.getVoteDate()).isEqualTo(today);
+    }
+
+    @Test
+    void testGetTodayUserVoteUserNotFound() {
+        when(userRepository.findByEmailIgnoreCase(user.getEmail())).thenReturn(Optional.empty());
+
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> voteService.getTodayUserVote(principal));
+
+        verify(userRepository).findByEmailIgnoreCase(user.getEmail());
+        verifyNoInteractions(voteRepository);
+
+        assertThat(exception.getMessage()).isEqualTo(VoteService.USER_NOT_FOUND_MESSAGE);
+    }
+
+    @Test
+    void testGetTodayUserVoteNotFound() {
+        when(userRepository.findByEmailIgnoreCase(user.getEmail())).thenReturn(Optional.of(user));
+        when(voteRepository.findByUserIdAndVoteDate(user.getId(), today)).thenReturn(Optional.empty());
+
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> voteService.getTodayUserVote(principal));
+
+        verify(userRepository).findByEmailIgnoreCase(user.getEmail());
+        verify(voteRepository).findByUserIdAndVoteDate(user.getId(), today);
+
+        assertThat(exception.getMessage()).isEqualTo(VoteService.NOT_VOTED_TODAY_MESSAGE);
+    }
+
 }
