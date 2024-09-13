@@ -4,11 +4,9 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import ru.example.voting.service.VoteService;
+import ru.example.voting.to.VoteOutputTo;
 
 import java.security.Principal;
 
@@ -19,11 +17,18 @@ public class VoteController {
 
     private static final String SUCCESS_VOTING = "You have successfully voted for a menu with id %d";
 
-
     private final VoteService voteService;
 
     public VoteController(VoteService voteService) {
         this.voteService = voteService;
+    }
+
+    @GetMapping("/{userId}/today")
+    @PreAuthorize("hasAuthority('ADMIN') or (@securityUtil.getCurrentUserId() == #userId)")
+    @Operation(summary = "Get today user vote", description = "Allows the admin to get user votes or for the user to get only his vote")
+    public ResponseEntity<VoteOutputTo> getTodayUserVote(@PathVariable Integer userId) {
+        VoteOutputTo voteOutputTo = voteService.getTodayUserVote(userId);
+        return ResponseEntity.ok(voteOutputTo);
     }
 
     @PostMapping

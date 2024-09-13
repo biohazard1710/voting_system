@@ -25,4 +25,11 @@ public class Vote extends BaseEntity {
     @Column(name = "vote_date", nullable = false)
     private LocalDate voteDate;
 
+    public Vote(Integer id, User user, Menu menu, LocalDate voteDate) {
+        super(id);
+        this.user = user;
+        this.menu = menu;
+        this.voteDate = voteDate;
+    }
+
 }

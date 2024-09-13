@@ -57,9 +57,12 @@ ____
 
 To help you get started with testing the application, you can use the following default credentials:
 
-- **Regular User:**
+- **Regular Users:**
    - **Email:** user@mail.ru
    - **Password:** userpwd
+   - **Email:** test@yandex.ru
+   - **Password:** testpwd
+
 
 - **Admin User:**
    - **Email:** admin@gmail.com

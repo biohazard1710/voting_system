@@ -1,5 +1,6 @@
 package ru.example.voting.service;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.example.voting.model.Menu;
 import ru.example.voting.repository.MenuRepository;
@@ -9,6 +10,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 @Service
+@Slf4j
 public class MenuService {
 
     private final MenuRepository menuRepository;
@@ -19,6 +21,7 @@ public class MenuService {
 
     public List<MenuOutputTo> getTodayMenus() {
         LocalDate today = LocalDate.now();
+        log.info("Getting menus for date: {}", today);
         List<Menu> menus = menuRepository.findByMenuDate(today);
 
         return menus.stream()

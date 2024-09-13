@@ -8,6 +8,7 @@ import ru.example.voting.model.Vote;
 import ru.example.voting.repository.MenuRepository;
 import ru.example.voting.repository.UserRepository;
 import ru.example.voting.repository.VoteRepository;
+import ru.example.voting.to.VoteOutputTo;
 
 import java.security.Principal;
 import java.time.LocalDate;
@@ -35,6 +36,18 @@ public class VoteService {
         log.info("User with ID {} voted for menu with ID {}. Vote ID: {}", user.getId(), menu.getId(), voteId);
 
         return menu.getId();
+    }
+
+    public VoteOutputTo getTodayUserVote(Integer userId) {
+        getUserById(userId);
+        Vote vote = getTodayVote(userId);
+
+        return new VoteOutputTo(
+                vote.getMenu().getRestaurant().getId(),
+                vote.getMenu().getRestaurant().getName(),
+                vote.getMenu().getDishes(),
+                vote.getVoteDate()
+        );
     }
 
     private User getUser(Principal principal) {
@@ -68,6 +81,23 @@ public class VoteService {
         Vote savedVote = voteRepository.save(vote);
         log.info("Saved vote with ID {}", savedVote.getId());
         return savedVote.getId();
+    }
+
+    private void getUserById(Integer userId) {
+        userRepository.findById(userId)
+                .orElseThrow(() -> {
+                    log.error("User with ID {} not found", userId);
+                    return new IllegalArgumentException("User not found");
+                });
+    }
+
+    private Vote getTodayVote(Integer userId) {
+        LocalDate today = LocalDate.now();
+        return voteRepository.findByUserIdAndVoteDate(userId, today)
+                .orElseThrow(() -> {
+                    log.error("Vote not found for user with ID {} on date {}", userId, today);
+                    return new IllegalArgumentException("Today vote not found");
+                });
     }
 
 }
