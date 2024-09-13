@@ -12,6 +12,7 @@ import java.security.Principal;
 
 @RestController
 @RequestMapping("api/votes")
+@PreAuthorize("hasAuthority('USER')")
 @Tag(name = "Vote Controller", description = "Controller for managing votes")
 public class VoteController {
 
@@ -23,16 +24,14 @@ public class VoteController {
         this.voteService = voteService;
     }
 
-    @GetMapping("/{userId}/today")
-    @PreAuthorize("hasAuthority('ADMIN') or (@securityUtil.getCurrentUserId() == #userId)")
-    @Operation(summary = "Get today user vote", description = "Allows the admin to get user votes or for the user to get only his vote")
-    public ResponseEntity<VoteOutputTo> getTodayUserVote(@PathVariable Integer userId) {
-        VoteOutputTo voteOutputTo = voteService.getTodayUserVote(userId);
+    @GetMapping("/today")
+    @Operation(summary = "Get today user vote", description = "Allows the user to get their own vote for today")
+    public ResponseEntity<VoteOutputTo> getTodayUserVote(Principal principal) {
+        VoteOutputTo voteOutputTo = voteService.getTodayUserVote(principal);
         return ResponseEntity.ok(voteOutputTo);
     }
 
     @PostMapping
-    @PreAuthorize("!hasAuthority('ADMIN')")
     @Operation(summary = "Vote for a menu", description = "Allows a user to vote a specific menu")
     public ResponseEntity<String> vote(@RequestParam Integer menuId, Principal principal) {
         Integer votedMenuId = voteService.vote(menuId, principal);
@@ -41,3 +40,4 @@ public class VoteController {
     }
 
 }
+

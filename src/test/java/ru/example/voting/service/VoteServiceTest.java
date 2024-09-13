@@ -80,7 +80,7 @@ class VoteServiceTest {
         verifyNoInteractions(menuRepository);
         verifyNoInteractions(voteRepository);
 
-        assertThat(exception.getMessage()).isEqualTo("User not found");
+        assertThat(exception.getMessage()).isEqualTo(VoteService.USER_NOT_FOUND_MESSAGE);
     }
 
     @Test
@@ -94,7 +94,8 @@ class VoteServiceTest {
         verify(menuRepository).findById(menuId);
         verifyNoInteractions(voteRepository);
 
-        assertThat(exception.getMessage()).isEqualTo("Menu with id " + menuId + " not found");
+        String message = String.format(VoteService.MENU_NOT_FOUND_MESSAGE, menuId);
+        assertThat(exception.getMessage()).isEqualTo(message);
     }
 
     @Test
@@ -110,21 +111,21 @@ class VoteServiceTest {
         verify(voteRepository).existsByUserIdAndVoteDate(user.getId(), today);
         verify(voteRepository, never()).save(any(Vote.class));
 
-        assertThat(exception.getMessage()).isEqualTo("You have already voted today");
+        assertThat(exception.getMessage()).isEqualTo(VoteService.ALREADY_VOTED_TODAY_MESSAGE);
     }
 
     @Test
     void testGetTodayUserVote() {
         Vote vote = new Vote(1, user, menu, today);
-        when(userRepository.findById(user.getId())).thenReturn(Optional.of(user));
+        when(userRepository.findByEmailIgnoreCase(user.getEmail())).thenReturn(Optional.of(user));
         when(voteRepository.findByUserIdAndVoteDate(user.getId(), today)).thenReturn(Optional.of(vote));
 
-        VoteOutputTo voteOutput = voteService.getTodayUserVote(user.getId());
+        VoteOutputTo voteOutput = voteService.getTodayUserVote(principal);
 
-        verify(userRepository).findById(user.getId());
+        verify(userRepository).findByEmailIgnoreCase(user.getEmail());
         verify(voteRepository).findByUserIdAndVoteDate(user.getId(), today);
 
-        assertThat(voteOutput.getRestaurantId()).isEqualTo(menu.getRestaurant().getId());
+        assertThat(voteOutput.getMenuId()).isEqualTo(menu.getId());
         assertThat(voteOutput.getRestaurantName()).isEqualTo(menu.getRestaurant().getName());
         assertThat(voteOutput.getDishes()).isEqualTo(menu.getDishes());
         assertThat(voteOutput.getVoteDate()).isEqualTo(today);
@@ -132,26 +133,27 @@ class VoteServiceTest {
 
     @Test
     void testGetTodayUserVoteUserNotFound() {
-        when(userRepository.findById(user.getId())).thenReturn(Optional.empty());
+        when(userRepository.findByEmailIgnoreCase(user.getEmail())).thenReturn(Optional.empty());
 
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> voteService.getTodayUserVote(user.getId()));
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> voteService.getTodayUserVote(principal));
 
-        verify(userRepository).findById(user.getId());
+        verify(userRepository).findByEmailIgnoreCase(user.getEmail());
         verifyNoInteractions(voteRepository);
 
-        assertThat(exception.getMessage()).isEqualTo("User not found");
+        assertThat(exception.getMessage()).isEqualTo(VoteService.USER_NOT_FOUND_MESSAGE);
     }
 
     @Test
     void testGetTodayUserVoteNotFound() {
-        when(userRepository.findById(user.getId())).thenReturn(Optional.of(user));
+        when(userRepository.findByEmailIgnoreCase(user.getEmail())).thenReturn(Optional.of(user));
         when(voteRepository.findByUserIdAndVoteDate(user.getId(), today)).thenReturn(Optional.empty());
 
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> voteService.getTodayUserVote(user.getId()));
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> voteService.getTodayUserVote(principal));
 
-        verify(userRepository).findById(user.getId());
+        verify(userRepository).findByEmailIgnoreCase(user.getEmail());
         verify(voteRepository).findByUserIdAndVoteDate(user.getId(), today);
 
-        assertThat(exception.getMessage()).isEqualTo("Today vote not found");
+        assertThat(exception.getMessage()).isEqualTo(VoteService.NOT_VOTED_TODAY_MESSAGE);
     }
+
 }

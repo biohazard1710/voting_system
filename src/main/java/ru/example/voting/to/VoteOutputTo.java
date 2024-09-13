@@ -9,7 +9,7 @@ import java.time.LocalDate;
 @AllArgsConstructor
 public class VoteOutputTo {
 
-    private Integer restaurantId;
+    private Integer menuId;
     private String restaurantName;
     private String dishes;
     private LocalDate voteDate;

@@ -30,9 +30,4 @@ public class CustomUserDetailsService implements UserDetailsService {
         );
     }
 
-    public Integer getUserIdByEmail(String email) {
-        User user = userRepository.findByEmailIgnoreCase(email)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + email));
-        return user.getId();
-    }
 }
