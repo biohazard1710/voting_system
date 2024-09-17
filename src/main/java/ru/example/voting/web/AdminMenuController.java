@@ -2,12 +2,12 @@ package ru.example.voting.web;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import ru.example.voting.service.MenuService;
-
-import java.time.LocalDate;
+import ru.example.voting.to.MenuInputTo;
 
 @RestController
 @RequestMapping("/api/admin/restaurants")
@@ -24,13 +24,11 @@ public class AdminMenuController {
         this.menuService = menuService;
     }
 
-    @PostMapping("/{restaurantId}/menu")
+    @PostMapping("/menu")
     @Operation(summary = "Create menu for a restaurant", description = "Allows admin to create a menu for a specific restaurant")
-    public ResponseEntity<String> createMenu(@PathVariable Integer restaurantId,
-                                             @RequestParam LocalDate menuDate,
-                                             @RequestParam String dishes) {
-        menuService.createMenu(restaurantId, menuDate, dishes);
-        String message = String.format(SUCCESS_CREATED, restaurantId);
+    public ResponseEntity<String> createMenu(@Valid @RequestBody MenuInputTo menuInputTom) {
+        menuService.createMenu(menuInputTom.getRestaurantId(), menuInputTom.getMenuDate(), menuInputTom.getDishes());
+        String message = String.format(SUCCESS_CREATED, menuInputTom.getRestaurantId());
         return ResponseEntity.ok(message);
     }
 

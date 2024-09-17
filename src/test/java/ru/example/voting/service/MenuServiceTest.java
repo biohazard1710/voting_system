@@ -14,9 +14,11 @@ import ru.example.voting.to.MenuOutputTo;
 import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 import static org.mockito.Mockito.*;
 
 class MenuServiceTest {
@@ -34,7 +36,6 @@ class MenuServiceTest {
     private Menu menu1;
     private Menu menu2;
     private Restaurant restaurant1;
-    private Restaurant restaurant2;
 
     @BeforeEach
     void setUp() {
@@ -42,7 +43,7 @@ class MenuServiceTest {
 
         today = LocalDate.now();
         restaurant1 = new Restaurant(1, "Restaurant №1");
-        restaurant2 = new Restaurant(2, "Restaurant №2");
+        Restaurant restaurant2 = new Restaurant(2, "Restaurant №2");
 
         menu1 = new Menu(1, restaurant1, today, "Первое, Второе, Сок");
         menu2 = new Menu(2, restaurant2, today, "Салат, Борщ, Компот");
@@ -89,11 +90,9 @@ class MenuServiceTest {
 
         when(restaurantRepository.findById(restaurantId)).thenReturn(Optional.empty());
 
-        try {
-            menuService.createMenu(restaurantId, menuDate, dishes);
-        } catch (IllegalArgumentException ex) {
-            assertThat(ex.getMessage()).isEqualTo(String.format(MenuService.RESTAURANT_NOT_FOUND, restaurantId));
-        }
+        assertThatThrownBy(() -> menuService.createMenu(restaurantId, menuDate, dishes))
+                .as(String.format(MenuService.RESTAURANT_NOT_FOUND, restaurantId))
+                .isInstanceOf(IllegalArgumentException.class);
 
         verify(menuRepository, never()).save(any(Menu.class));
     }
@@ -108,7 +107,7 @@ class MenuServiceTest {
         menuService.updateMenu(menuId, newDishes);
 
         verify(menuRepository, times(1)).save(argThat(menu ->
-                menu.getId().equals(menuId) &&
+                Objects.equals(menu.getId(), menuId) &&
                         menu.getRestaurant().equals(restaurant1) &&
                         menu.getMenuDate().equals(today) &&
                         menu.getDishes().equals(newDishes)
@@ -122,14 +121,11 @@ class MenuServiceTest {
 
         when(menuRepository.findById(menuId)).thenReturn(Optional.empty());
 
-        try {
-            menuService.updateMenu(menuId, newDishes);
-        } catch (IllegalArgumentException ex) {
-            assertThat(ex.getMessage()).isEqualTo(String.format(MenuService.MENU_NOT_FOUND, menuId));
-        }
+        assertThatThrownBy(() -> menuService.updateMenu(menuId, newDishes))
+                .as(String.format(MenuService.MENU_NOT_FOUND, menuId))
+                .isInstanceOf(IllegalArgumentException.class);
 
         verify(menuRepository, never()).save(any(Menu.class));
     }
 
 }
-
