@@ -31,10 +31,7 @@ public class SecurityConfig {
         return http
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/").authenticated()
-                        .requestMatchers("/api/restaurants/menus").authenticated()
-                        .requestMatchers("/api/votes/**").authenticated()
-                        .requestMatchers("/swagger-ui/**").authenticated()
+                        .requestMatchers("/**").authenticated()
                         .anyRequest().permitAll()
                 )
                 .formLogin(login -> login
